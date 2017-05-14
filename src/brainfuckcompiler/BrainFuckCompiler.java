@@ -26,7 +26,7 @@ public class BrainFuckCompiler {
     // TODO code application logic here
     try {
       Parser parser = new Parser();
-      FileReader file = new FileReader("brainfuck.json");
+      FileReader file = new FileReader(args[0]);
       BufferedReader reader = new BufferedReader(file);
       String data = null;
       while ((data = reader.readLine()) != null) {
@@ -35,7 +35,7 @@ public class BrainFuckCompiler {
       }
       parser.parse();
     } catch (IOException e) {
-      System.out.print("Dupa nie ma pliku");
+      System.out.print(e);
     }
 
   }

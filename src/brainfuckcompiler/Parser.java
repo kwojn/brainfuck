@@ -6,6 +6,7 @@
 package brainfuckcompiler;
 
 import java.lang.reflect.Array;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.Stack;
@@ -17,39 +18,42 @@ import java.util.Stack;
 public class Parser {
   
   
-  private ArrayList<Integer> stack;
-  private int pointer;
+  private ArrayList<Integer> stack = new ArrayList<Integer>();
+  private int pointer=0;
   private String  program="";
   private char[] charProgram;
-  private Stack loopStack;
+  private Stack<Integer> loopStack = new Stack<Integer>();
   private int applicationPointer=0;
+  public static final int STACK_SIZE = 1024;
 
-  public Parser() {
-    this.loopStack = new Stack();
-  }
-  
+   
   private void moveLeft(){ 
-          this.pointer--;
+          this.pointer-=1;
+          
   }
 
   private void moveRight() {
-          this.pointer++;
+          this.pointer+=1;
+          
   }
 
   private void increase() {
     
-    Integer valueAtPointer =  this.stack.get(this.pointer);
-    this.stack.set(this.pointer, valueAtPointer++);
+    int valueAtPointer =  this.stack.get(this.pointer);
+    this.stack.set(this.pointer, ++valueAtPointer);
+   
   }
 
   private void decrease() {
-    Integer valueAtPointer =  this.stack.get(this.pointer);
-    this.stack.set(this.pointer, valueAtPointer--);
+    int valueAtPointer =  this.stack.get(this.pointer);
+    this.stack.set(this.pointer, --valueAtPointer);
+   
   }
 
   private void jumpLeft() {
     if (this.read()==0){
       this.applicationPointer++;
+      this.loopStack.pop();
     }else{
       this.applicationPointer = (int)this.loopStack.peek();
     }
@@ -60,13 +64,13 @@ public class Parser {
       this.applicationPointer = (int)this.loopStack.peek();
     }else{
       this.loopStack.push(this.applicationPointer);
-      this.applicationPointer++;
+     
     }
     
   }
 
   private Integer read() {
-    return this.stack.get(pointer);
+    return this.stack.get(this.pointer);
   }
 
   private void write(){ 
@@ -77,34 +81,57 @@ public class Parser {
     switch (x){
       case '+':
         this.increase();
+        this.applicationPointer++;
         break;
       case '-':
         this.decrease();
+        this.applicationPointer++;
         break;
       case '.':
         this.write();
+        this.applicationPointer++;
+        break;
       case '>':
         this.moveRight();
+        this.applicationPointer++;
         break;
       case '<':
         this.moveLeft();
+        this.applicationPointer++;
+        break;
       case '[':
         this.jumpRight();
+        this.applicationPointer++;
+        break;
       case ']':
         this.jumpLeft();
+        break;
+      default: this.applicationPointer++;
     }
+     
     
-   // System.out.println(x);
   
   }
 
   public void parse() {
-    
-    while(this.applicationPointer<this.charProgram.length){
+    this.initStack();
+    int l = this.program.length();
+    while(this.applicationPointer<l){
       interpret(this.program.charAt(this.applicationPointer));
-    
     }
+    System.out.println();
+    System.out.println(this.stack);
+    System.out.println(this.pointer);
+    
+    
 
+  }
+  
+  public void initStack(){
+    int i;
+    for (i=0;i<STACK_SIZE;i++){
+      this.stack.add(0);
+    }
   }
      
   public void concat(String line){
